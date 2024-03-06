@@ -11,6 +11,9 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.ViewModelFactoryDsl
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -25,8 +28,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var phoneedt:EditText
     private lateinit var dialog: Dialog
 
-    val listofContact= mutableListOf<ContactItem>()
+//    val listofContact= mutableListOf<ContactItem>()
     private lateinit var contactaptr:ContactAdapter
+    private lateinit var repo: Repo
+    private lateinit var contactViewModel: ContactViewModel
+    private lateinit var contactViewModelFactory:ContactViewModelFactory
 
 
 
@@ -38,8 +44,18 @@ class MainActivity : AppCompatActivity() {
         rv =findViewById(R.id.rv)
 
         rv.layoutManager=LinearLayoutManager(this)
-        contactaptr= ContactAdapter(listofContact)
-        rv.adapter=contactaptr
+
+        repo=Repo()
+        contactViewModelFactory = ContactViewModelFactory(repo)
+        contactViewModel=ViewModelProvider(this,contactViewModelFactory).get(ContactViewModel::class.java)
+
+        contactViewModel.liveDataContacts.observe(this){
+
+            contactaptr= ContactAdapter(it)
+            rv.adapter=contactaptr
+        }
+
+
 
 
 
@@ -91,7 +107,7 @@ class MainActivity : AppCompatActivity() {
                     name = etrname,
                     phone_no = etrphone
                 )
-                listofContact.add(contact)
+                contactViewModel.addData(contact)
                 contactaptr.notifyDataSetChanged()
                 dialog.dismiss()
             }
